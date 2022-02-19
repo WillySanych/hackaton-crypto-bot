@@ -70,6 +70,10 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-stream" % versions.akka
   )
 
+  lazy val redis = Seq(
+    "net.debasishg" %% "redisclient" % "3.41"
+  )
+
   lazy val all = Seq(
     // effects
     monix,
@@ -77,6 +81,8 @@ object Dependencies {
     `kafka-fs2`,
     // logging
     `scala-logging`,
+    // redis,
+    redis,
     // other
     enumeratum,
     config,

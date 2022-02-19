@@ -4,11 +4,13 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.stream.scaladsl._
 import rht.hack.Main.SourceActor
+import rht.hack.Redis._
 
 
 object KafkaStream {
 
   def getInstanseofActorRef: SourceActor = {
+
     implicit val actorSystem: ActorSystem = ActorSystem()
 
     val source: Source[Any, ActorRef] = Source.actorRef(
@@ -17,11 +19,12 @@ object KafkaStream {
           CompletionStrategy.immediately
       },
       failureMatcher = PartialFunction.empty,
-      bufferSize = 5000,
+      bufferSize = 2000,
       overflowStrategy = OverflowStrategy.dropHead)
 
-    val streamActor: ActorRef = source.to(Sink.foreach(println)).run()
+    val streamActor: ActorRef = source.to(toRedis).run()
 
     streamActor
   }
-  }
+
+}
