@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.stream.{CompletionStrategy, OverflowStrategy}
 import akka.stream.scaladsl._
 import rht.hack.Main.SourceActor
-import rht.hack.Redis._
+import rht.hack.Postgres._
 
 
 object KafkaStream {
@@ -22,7 +22,7 @@ object KafkaStream {
       bufferSize = 2000,
       overflowStrategy = OverflowStrategy.dropHead)
 
-    val streamActor: ActorRef = source.to(toRedis).run()
+    val streamActor: ActorRef = source.to(toPostgres).run()
 
     streamActor
   }

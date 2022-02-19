@@ -6,7 +6,7 @@ lazy val `candles` =
     .service("candles")
     .settings(
       libraryDependencies ++= Dependencies.`akka-streams`,
-      libraryDependencies ++= Dependencies.redis
+      libraryDependencies ++= Dependencies.postgress
     )
     .dependsOn(
       `domain-common`,
