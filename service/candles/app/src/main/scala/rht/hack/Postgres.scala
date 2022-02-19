@@ -28,9 +28,12 @@ object Postgres {
   def putCandle(candle: Candle): Unit =
     sql"""
         INSERT INTO candle (figi, interval, low, high, open, close, open_time)
-        VALUES (${candle.figi.value}, ${candle.interval.toString},
-          ${candle.details.low}, ${candle.details.high},
-          ${candle.details.open}, ${candle.details.close},
+        VALUES (${candle.figi.value},
+        ${candle.interval.toString},
+          ${candle.details.low},
+          ${candle.details.high},
+          ${candle.details.open},
+          ${candle.details.close},
           ${candle.details.openTime.getEpochSecond})
         ON CONFLICT (figi)
         DO UPDATE SET
