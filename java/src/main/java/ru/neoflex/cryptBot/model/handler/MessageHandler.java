@@ -53,37 +53,41 @@ public class MessageHandler {
         //save state in to cache
         botStateChanger.saveBotState(userId, botState);
         if(!user.isOn()) {
-            switch (cryptState.name()) {
-                case ("BTC"):
-                case ("ETH"):
-                case ("BNB"):
-                case ("DOGE"):
-                case ("DOT"):
-                case ("ADA"):
-                    user.setOn(true);
-                    userService.save(user);
-                    // just repeatable messages
-                    CryptBot telegramBot = ApplicationContextProvider.getApplicationContext().getBean(CryptBot.class);
-                    executorMap.put(userId, Executors.newSingleThreadScheduledExecutor());
-                    TimerTask task = new TimerTask() {
-                        @Override
-                        public void run() {
-                            try {
-                                Candle candle = candleService.findById(cryptState.name());
-                                telegramBot.execute(new SendMessage(String.valueOf(chatId), candle.getFigi() +
-                                        "\r\nInterval: " + candle.getInterval() + "\r\nLow: " + candle.getLow() +
-                                        "\r\nHigh: " + candle.getHigh() + "\r\nOpen: " + candle.getOpen() +
-                                        "\r\nClose: " + candle.getClose() + "\r\nOpen time: " + candle.getOpenTime()));
-                            } catch (TelegramApiException e) {
-                                e.printStackTrace();
+            try {
+                switch (cryptState.name()) {
+                    case ("BTC"):
+                    case ("ETH"):
+                    case ("BNB"):
+                    case ("DOGE"):
+                    case ("DOT"):
+                    case ("ADA"):
+                        user.setOn(true);
+                        userService.save(user);
+                        // just repeatable messages
+                        CryptBot telegramBot = ApplicationContextProvider.getApplicationContext().getBean(CryptBot.class);
+                        executorMap.put(userId, Executors.newSingleThreadScheduledExecutor());
+                        TimerTask task = new TimerTask() {
+                            @Override
+                            public void run() {
+                                try {
+                                    Candle candle = candleService.findById(cryptState.name());
+                                    telegramBot.execute(new SendMessage(String.valueOf(chatId), candle.getFigi() +
+                                            "\r\nInterval: " + candle.getInterval() + "\r\nLow: " + candle.getLow() +
+                                            "\r\nHigh: " + candle.getHigh() + "\r\nOpen: " + candle.getOpen() +
+                                            "\r\nClose: " + candle.getClose() + "\r\nOpen time: " + candle.getOpenTime()));
+                                } catch (TelegramApiException e) {
+                                    e.printStackTrace();
+                                }
                             }
-                        }
-                    };
-                    int period = botState.equals(BotState.SUBSCRIBE_FOR_CHANGE_ACCEPTED) ?
-                            (int)(Math.random() * ((50 - 1) + 1)) : 3;
-                    executorMap.get(userId).scheduleAtFixedRate(task, 0, period, TimeUnit.SECONDS);
-                    return menuService.getMainMenuMessage(message.getChatId(),
-                            "Меню к Вашим услугам.", userId);
+                        };
+                        int period = botState.equals(BotState.SUBSCRIBE_FOR_CHANGE_ACCEPTED) ?
+                                (int)(Math.random() * ((50 - 1) + 1)) : 3;
+                        executorMap.get(userId).scheduleAtFixedRate(task, 0, period, TimeUnit.SECONDS);
+                        return menuService.getMainMenuMessage(message.getChatId(),
+                                "Меню к Вашим услугам.", userId);
+                }
+            } catch (NullPointerException ex) {
+                log.warn("User is not subscribed.");
             }
         }
         switch (botState.name()) {
