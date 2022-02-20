@@ -70,6 +70,12 @@ object Dependencies {
     "com.typesafe.akka" %% "akka-stream" % versions.akka
   )
 
+  lazy val postgress = Seq(
+    "org.tpolecat" %% "doobie-core" % "0.9.0",
+    "org.tpolecat" %% "doobie-postgres" % "0.9.0",
+    "org.tpolecat" %% "doobie-specs2" % "0.9.0"
+  )
+
   lazy val all = Seq(
     // effects
     monix,
@@ -77,6 +83,8 @@ object Dependencies {
     `kafka-fs2`,
     // logging
     `scala-logging`,
+    //postgress
+    postgress,
     // other
     enumeratum,
     config,
