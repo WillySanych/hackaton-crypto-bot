@@ -34,5 +34,5 @@ public class Candle {
     private String close;
 
     @Column(name = "open_time", length = 100)
-    private Long openTime;
+    private String openTime;
 }
