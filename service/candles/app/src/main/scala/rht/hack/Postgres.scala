@@ -30,19 +30,19 @@ object Postgres {
         INSERT INTO candle (figi, interval, low, high, open, close, open_time)
         VALUES (${candle.figi.value},
         ${candle.interval.toString},
-          ${candle.details.low},
-          ${candle.details.high},
-          ${candle.details.open},
-          ${candle.details.close},
-          ${candle.details.openTime.getEpochSecond})
+        ${candle.details.low},
+        ${candle.details.high},
+        ${candle.details.open},
+        ${candle.details.close},
+        ${candle.details.openTime.toString})
         ON CONFLICT (figi)
         DO UPDATE SET
         interval = ${candle.interval.toString},
-          low = ${candle.details.low},
-          high = ${candle.details.high},
-          open = ${candle.details.open},
-          close = ${candle.details.close},
-          open_time = ${candle.details.openTime.getEpochSecond};
+        low = ${candle.details.low},
+        high = ${candle.details.high},
+        open = ${candle.details.open},
+        close = ${candle.details.close},
+        open_time = ${candle.details.openTime.toString};
       """.update.run.transact(xa).unsafeRunSync
 
   def toPostgres: Sink[Any, Future[Done]] = {

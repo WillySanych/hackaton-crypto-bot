@@ -10,6 +10,6 @@ CREATE TABLE IF NOT EXISTS candle
           high character varying(100),
           open character varying(100),
           close character varying(100),
-          open_time bigint,
+          open_time character varying(100),
           PRIMARY KEY (figi)
         );
