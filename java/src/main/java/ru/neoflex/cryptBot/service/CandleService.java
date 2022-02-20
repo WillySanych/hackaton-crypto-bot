@@ -17,7 +17,7 @@ public class CandleService {
 
     @Transactional
     public Candle findById (String id) throws ServiceException {
-        log.info("Request to find user bi id: {}", id);
+        log.info("Request to find candle by id: {}", id);
         return candleRepository.findByFigi(id).orElseThrow(() -> new ServiceException("No such crypt with the specified ID"));
     }
 }

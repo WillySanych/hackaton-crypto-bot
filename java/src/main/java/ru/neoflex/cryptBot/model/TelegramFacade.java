@@ -2,6 +2,7 @@ package ru.neoflex.cryptBot.model;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -13,6 +14,7 @@ import ru.neoflex.cryptBot.service.UserService;
 
 @Component
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@Slf4j
 public class TelegramFacade {
     private final MessageHandler messageHandler;
     private final BotStateChanger botStateChanger;

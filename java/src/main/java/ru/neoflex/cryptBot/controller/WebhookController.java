@@ -21,7 +21,11 @@ public class WebhookController {
     // point for message
     @PostMapping("/")
     public BotApiMethod<?> onUpdateReceived(@RequestBody Update update) {
-        log.info("Message from user {} incoming", update.getMessage().getFrom().getId());
+        try {
+            log.info("Message from user {} incoming", update.getMessage().getFrom().getId());
+        } catch (NullPointerException ex) {
+            log.error("Something went wrong and update don't have user id");
+        }
         return cryptBot.onWebhookUpdateReceived(update);
     }
 }
