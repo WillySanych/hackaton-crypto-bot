@@ -77,6 +77,7 @@ public class MessageHandler {
                                             "\r\nClose: " + candle.getClose() + "\r\nOpen time: " + candle.getOpenTime()));
                                 } catch (TelegramApiException e) {
                                     e.printStackTrace();
+                                    user.setOn(true);
                                 }
                             }
                         };
