@@ -1,5 +1,6 @@
 package ru.neoflex.cryptBot.model.handler;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -24,6 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@Slf4j
 public class MessageHandler {
     private final UserService userService;
     private final MenuService menuService;
@@ -76,8 +78,8 @@ public class MessageHandler {
                                             "\r\nHigh: " + candle.getHigh() + "\r\nOpen: " + candle.getOpen() +
                                             "\r\nClose: " + candle.getClose() + "\r\nOpen time: " + candle.getOpenTime()));
                                 } catch (TelegramApiException e) {
-                                    e.printStackTrace();
-                                    user.setOn(true);
+                                    botStateChanger.saveBotState(userId, BotState.UNSUBSCRIBE_ACCEPTED);
+                                    executorMap.get(userId).shutdown();
                                 }
                             }
                         };
@@ -88,47 +90,60 @@ public class MessageHandler {
                                 "Меню к Вашим услугам.", userId);
                 }
             } catch (NullPointerException ex) {
-                log.warn("User is not subscribed.");
+                log.error("User is not subscribed.");
             }
         }
-        switch (botState.name()) {
-            case ("START"):
-                return menuService.getMainMenuMessage(message.getChatId(),
-                        "Добро пожаловать, в данном боте Вы можете получать актуальную информацию о " +
-                                "цене популярных криптовалют, для этого Вам необходимо подписаться. Чтобы это " +
-                                "сделать, нажмите на cоответствующую кнопку из меню ниже и следуйте инструкции. " +
-                                "Да прибудет с Вами богатство.", userId);
-            case ("HELP"):
-                return menuService.getMainMenuMessage(message.getChatId(),
-                        "В меню расположены 3 кнопки:\r\n" +
-                                "1. Подписаться на криптовалюту - данная подписка подразумевает, что Вы будете " +
-                                "получать актуальные данные по цене на выбранную Вами криптовалюту каждые 3 секунды." +
-                                "\r\n2.Подписаться на падение курса валюты - данная подписка подразумевает, что Вы " +
-                                "будете получать уведомления об изменении цены на выбранную Вами криптовалюту на Х%, " +
-                                "где Х - заданный Вами процент.\r\n" +
-                                "3. Помощь - ну тут Вы уже сами все поняли.", userId);
-            case ("SUBSCRIBE_FOR_3_SECONDS"):
-            case ("SUBSCRIBE_FOR_CHANGE_ACCEPTED"):
-                return menuService.getSelectCryptMenuMessage(message.getChatId(), "Выберите криптовалюту, " +
-                        "которую Вы хотите отслеживать.", userId);
-            case ("SUBSCRIBE_FOR_CHANGE"):
-                return new SendMessage(String.valueOf(userId),"Введите количество процентов (0-100, число должно " +
-                        "быть целым), при падении на которые Вы хотите получать уведомление.");
-            case ("UNKNOWN_COMMAND"):
-                return menuService.getMainMenuMessage(message.getChatId(),
-                        "Это вне моего сознания, пожалуйста, выберите действие из меню.", userId);
-            case ("UNSUBSCRIBE"):
-                return menuService.getUnsubscribeMenuMessage(message.getChatId(),
-                        "Вы действительно хотите отписаться?", userId);
-            case ("UNSUBSCRIBE_ACCEPTED"):
-                executorMap.get(userId).shutdown();
-                return menuService.getMainMenuMessage(message.getChatId(),
-                        "Вы успешно отписались.", userId);
-            case ("MENU"):
-                return menuService.getMainMenuMessage(message.getChatId(),
-                        "Меню к Вашим услугам.", userId);
-            default:
-                throw new IllegalStateException("Unexpected value: " + botState);
+        try {
+            switch (botState.name()) {
+                case ("START"):
+                    return menuService.getMainMenuMessage(message.getChatId(),
+                            "Добро пожаловать, в данном боте Вы можете получать актуальную информацию о " +
+                                    "цене популярных криптовалют, для этого Вам необходимо подписаться. Чтобы это " +
+                                    "сделать, нажмите на cоответствующую кнопку из меню ниже и следуйте инструкции. " +
+                                    "Да прибудет с Вами богатство.", userId);
+                case ("HELP"):
+                    return menuService.getMainMenuMessage(message.getChatId(),
+                            "В меню расположены 3 кнопки:\r\n" +
+                                    "1. Подписаться на криптовалюту - данная подписка подразумевает, что Вы будете " +
+                                    "получать актуальные данные по цене на выбранную Вами криптовалюту каждые 3 секунды." +
+                                    "\r\n2.Подписаться на падение курса валюты - данная подписка подразумевает, что Вы " +
+                                    "будете получать уведомления об изменении цены на выбранную Вами криптовалюту на Х%, " +
+                                    "где Х - заданный Вами процент.\r\n" +
+                                    "3. Помощь - ну тут Вы уже сами все поняли.", userId);
+                case ("SUBSCRIBE_FOR_3_SECONDS"):
+                case ("SUBSCRIBE_FOR_CHANGE_ACCEPTED"):
+                    return menuService.getSelectCryptMenuMessage(message.getChatId(), "Выберите криптовалюту, " +
+                            "которую Вы хотите отслеживать.", userId);
+                case ("SUBSCRIBE_FOR_CHANGE"):
+                    return new SendMessage(String.valueOf(userId),"Введите количество процентов (0-100, число должно " +
+                            "быть целым), при падении на которые Вы хотите получать уведомление.");
+                case ("UNKNOWN_COMMAND"):
+                    return menuService.getMainMenuMessage(message.getChatId(),
+                            "Это вне моего сознания, пожалуйста, выберите действие из меню.", userId);
+                case ("UNSUBSCRIBE"):
+                    return menuService.getUnsubscribeMenuMessage(message.getChatId(),
+                            "Вы действительно хотите отписаться?", userId);
+                case ("UNSUBSCRIBE_ACCEPTED"):
+                    try {
+                        executorMap.get(userId).shutdown();
+                    } catch (NullPointerException ex){
+                        botStateChanger.saveBotState(userId, BotState.MENU);
+                    }
+                    return menuService.getMainMenuMessage(message.getChatId(),
+                            "Вы успешно отписались.", userId);
+                case ("MENU"):
+                    return menuService.getMainMenuMessage(message.getChatId(),
+                            "Меню к Вашим услугам.", userId);
+                default:
+                    throw new IllegalStateException("Unexpected value: " + botState);
+            }
+        } catch (NullPointerException ex) {
+            botStateChanger.saveBotState(userId, BotState.START);
+            return menuService.getMainMenuMessage(message.getChatId(),
+                    "Добро пожаловать, в данном боте Вы можете получать актуальную информацию о " +
+                            "цене популярных криптовалют, для этого Вам необходимо подписаться. Чтобы это " +
+                            "сделать, нажмите на cоответствующую кнопку из меню ниже и следуйте инструкции. " +
+                            "Да прибудет с Вами богатство.", userId);
         }
     }
 }
